@@ -1,22 +1,34 @@
 #!/system/bin/sh
 
-# Clear
+ui_print "- Installing vanced YouTube"
+
+# Uninstall stock YouTube app
+# Keep the data and cache directories around after package removal ( -k )
+PACKAGE=$(pm list packages | grep com.google.android.youtube | head -n 1 | cut -d ":" -f2-)
+if [ "$PACKAGE" = "com.google.android.youtube" ]; then
+	pm uninstall -k --user 0 com.google.android.youtube > /dev/null 2>&1
+fi
+
+# Uninstall Official Vanced YouTube
 if [ -d /data/adb/Vanced ]; then
-	PATH=`pm path com.google.android.youtube | cut -d ":" -f2- | grep "base.apk"`
-	pm uninstall com.google.android.youtube > /dev/null 2>&1
-	umount $PATH
-	rm -rf /data/app/com.google.android.youtube*
 	rm -rf /data/adb/post-fs-data.d/vanced.sh
 	rm -rf /data/adb/service.d/vanced.sh
 	rm -rf /data/adb/Vanced
 fi
 
-# Install official YouTube client [split apk's]
-ui_print "- Installing vanced YouTube"
+# sqlite3 binary
+mkdir -p $MODPATH/system/bin
+if [ "$ARCH" = "arm" ]; then
+	mv $MODPATH/sqlite3/sqlite3-arm $MODPATH/system/bin/sqlite3
+elif [ "$ARCH" = "arm64" ]; then
+	mv $MODPATH/sqlite3/sqlite3-arm64 $MODPATH/system/bin/sqlite3
+fi
+set_perm $MODPATH/system/bin/sqlite3 0 0 0755
 
+# Install official YouTube client [split apk's]
 Install_Official_YouTube() {
 # Create TMP directory
-TMP=/data/TMP
+TMP=/data/tmp_vanced
 rm -rf $TMP > /dev/null 2>&1
 mkdir -p $TMP
 chmod +x $TMP
@@ -54,17 +66,17 @@ mount -o bind $MODPATH/vanced/base.apk $YT
 # Disable Play store updates for vanced YouTube
 # Detach script
 ui_print "- Adding Detach script for vanced YouTube"
+
 echo "
 # Disable Play store updates for vanced YouTube
 # Wait 
 sleep 60
 
-VEN=\"com.android.vending\"
 LDB=\"/data/data/com.android.vending/databases/library.db\"
 LADB=\"/data/data/com.android.vending/databases/localappstate.db\"
 
-# Kill Play store
-pkill -f \"\$VEN\"
+# Force stop Play store
+am force-stop com.android.vending
 
 sqlite3 \$LDB \"UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'\";
 sqlite3 \$LADB \"UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'\";
@@ -79,23 +91,31 @@ cmd appops set \$VEN RUN_IN_BACKGROUND ignore
 # uninstall YouTube official app on next boot
 echo "#!/system/bin/sh
 
-# If VancedYT module is uninstalled then
-# uninstall YouTube official app on next boot
-
+# Wait till device boot process complets
 while [ \"\$(getprop sys.boot_completed)\" != \"1\" ]; do
 	sleep 1
 done
 
+sleep 2
+
+# If VancedYT module is uninstalled then uninstall YouTube app on next boot
 if [[ ! -d /data/adb/modules/VancedYT || -f /data/adb/modules/VancedYT/remove ]]; then
 	pm uninstall com.google.android.youtube
 	rm -rf /data/adb/service.d/VancedYT-uninstall.sh
 fi
+
+# Remove VancedYT module if YouTube app is uninstalled manually by user
+PACKAGE=\$(pm list packages | grep com.google.android.youtube | head -n 1 | cut -d \":\" -f2-)
+if [ \"\$PACKAGE\" != \"com.google.android.youtube\" ]; then
+	rm -rf /data/adb/modules/VancedYT
+	rm -rf /data/adb/service.d/VancedYT-uninstall.sh
+fi
 " > /data/adb/service.d/VancedYT-uninstall.sh
+
 chmod +x /data/adb/service.d/VancedYT-uninstall.sh
 
 # Remove Junk
 rm -rf $TMP
+rm -rf $MODPATH/sqlite3
 rm -rf $MODPATH/YouTube
 
-# Reboot
-ui_print "- Reboot Your device to use YouTube vanced"
