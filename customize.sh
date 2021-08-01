@@ -1,9 +1,10 @@
 #!/system/bin/sh
 
-ui_print "- Installing vanced YouTube"
+ui_print "- Installing YouTube vanced"
 
-# Uninstall stock YouTube app
-# Keep the data and cache directories around after package removal ( -k )
+# Uninstall YouTube app
+# Keep the data and cache directories around after package removal [-k]
+# User with multiple "Work Profiles", YouTube is uninstalled for main user only [--user 0]
 PACKAGE=$(pm list packages | grep com.google.android.youtube | head -n 1 | cut -d ":" -f2-)
 if [ "$PACKAGE" = "com.google.android.youtube" ]; then
 	pm uninstall -k --user 0 com.google.android.youtube > /dev/null 2>&1
@@ -16,23 +17,19 @@ if [ -d /data/adb/Vanced ]; then
 	rm -rf /data/adb/Vanced
 fi
 
-# sqlite3 binary
+# SQLite3 and busybox binary
+# SQLite3 binary is needed for detach script
 mkdir -p $MODPATH/system/bin
 if [ "$ARCH" = "arm" ]; then
 	mv $MODPATH/sqlite3/sqlite3-arm $MODPATH/system/bin/sqlite3
+	mv $MODPATH/busybox/busybox-arm $MODPATH/system/bin/busybox
 elif [ "$ARCH" = "arm64" ]; then
 	mv $MODPATH/sqlite3/sqlite3-arm64 $MODPATH/system/bin/sqlite3
+	mv $MODPATH/busybox/busybox-arm64 $MODPATH/system/bin/busybox
 fi
-set_perm $MODPATH/system/bin/sqlite3 0 0 0755
 
-# Install official YouTube client [split apk's]
+# Install official YouTube app [base + split apk's]
 Install_Official_YouTube() {
-# Create TMP directory
-TMP=/data/tmp_vanced
-rm -rf $TMP > /dev/null 2>&1
-mkdir -p $TMP
-chmod +x $TMP
-
 # Change Directory
 cd $MODPATH/YouTube
 
@@ -43,6 +40,7 @@ Total_Size=`ls -l | awk '{print $5}' | awk '{s+=$1} END {print s}'`
 ID=`pm install-create -S $Total_Size | sed 's/.*\[//g;s/\]//g'`
 
 # Prepare for stagging apk's
+TMP=$MODPATH/sqlite3
 ls -l | awk '{print $5}' | sed '1d' | sed 's/^/pm install-write -S /' | sed 's/$/ '"$ID"'/' | awk '{print $0 " " i++}' > $TMP/pminstall
 ls -1 > $TMP/APK_PATH # Get APK_PATH
 paste $TMP/pminstall $TMP/APK_PATH -d " " > $TMP/stagging_all_apks # combine all files
@@ -82,8 +80,14 @@ sqlite3 \$LDB \"UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.
 sqlite3 \$LADB \"UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'\";
 
 # Disable Fallback broadcast
-pm disable \"\$VEN/com.google.android.finsky.scheduler.FallbackReceiver\"
-cmd appops set \$VEN RUN_IN_BACKGROUND ignore
+pm disable \"com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver\"
+cmd appops set com.android.vending RUN_IN_BACKGROUND ignore
+" >> $MODPATH/service.sh
+
+# Run crond job every 6 hourly
+echo "
+# Run crond job every 6 hourly
+busybox crond -b -c /data/adb/modules/VancedYT/crontabs
 " >> $MODPATH/service.sh
 
 # Uninstall Script
@@ -113,9 +117,14 @@ fi
 " > /data/adb/service.d/VancedYT-uninstall.sh
 
 chmod +x /data/adb/service.d/VancedYT-uninstall.sh
+set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 
 # Remove Junk
 rm -rf $TMP
+rm -rf $MODPATH/busybox
 rm -rf $MODPATH/sqlite3
 rm -rf $MODPATH/YouTube
+
+# Note to other developers who are looking at this script.
+# Tell me if you have any suggestions, ideas, improvements etc.
 
