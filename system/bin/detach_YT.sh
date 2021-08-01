@@ -12,8 +12,7 @@ sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = 'com.g
 
 # Disable Fallback broadcast
 pm disable "com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver"
-cmd appops set $VEN RUN_IN_BACKGROUND ignore
+cmd appops set com.android.vending RUN_IN_BACKGROUND ignore
 
 # Log
 echo "$(date)" > /data/detach_YT.log
-
