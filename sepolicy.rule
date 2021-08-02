@@ -1,0 +1,3 @@
+#!/system/bin/sh
+
+magiskpolicy --live "allow system_server system_file file *"
