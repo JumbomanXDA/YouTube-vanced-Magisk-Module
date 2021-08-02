@@ -1,0 +1,19 @@
+#!/system/bin/sh
+# Disable Play store updates for vanced YouTube
+
+LDB="/data/data/com.android.vending/databases/library.db"
+LADB="/data/data/com.android.vending/databases/localappstate.db"
+
+# Force stop Play store
+am force-stop com.android.vending > /dev/null 2>&1
+
+sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'";
+sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'";
+
+# Disable Fallback broadcast
+pm disable "com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver" > /dev/null 2>&1
+cmd appops set com.android.vending RUN_IN_BACKGROUND ignore > /dev/null 2>&1
+
+# Keep Log for 3 days
+find /data -type f -mtime +3 -name 'detach_YT.log' -exec rm {} \;
+echo "$(date)" >> /data/detach_YT.log
