@@ -119,12 +119,8 @@ fi
 chmod +x /data/adb/service.d/VancedYT-uninstall.sh
 set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 
-# Remove Junk
-rm -rf $TMP
-rm -rf $MODPATH/busybox
-rm -rf $MODPATH/sqlite3
-rm -rf $MODPATH/YouTube
+# Remove Leftovers
+rm -rf $TMP $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube
 
 # Note to other developers who are looking at this script.
 # Tell me if you have any suggestions, ideas, improvements etc.
-
