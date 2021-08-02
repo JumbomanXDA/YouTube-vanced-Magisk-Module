@@ -1,3 +1,4 @@
+
 # Run every 6 hours
-0 */6 * * * detach_YT.sh
+0 */6 * * * /system/bin/detachyt
 
