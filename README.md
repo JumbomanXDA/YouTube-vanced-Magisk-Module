@@ -6,5 +6,5 @@
 3. **sqlite3 binary** - [Zackptg5](https://github.com/Zackptg5/Cross-Compiled-Binaries-Android)
 4. **Busybox binary** - [osm0sis](https://github.com/Magisk-Modules-Repo/busybox-ndk)
 5. **Split APK Installation Guide** - [https://raccoon.onyxbits.de/blog/install-split-apk-adb/](https://raccoon.onyxbits.de/blog/install-split-apk-adb/)
-
+6. **Help regarding crond job** - [https://crontab.guru/](https://crontab.guru/)
 
