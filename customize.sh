@@ -1,5 +1,13 @@
 #!/system/bin/sh
 
+# Checking for installation environment
+# Abort TWRP installation with error message when user tries to install this module in TWRP
+if [ $BOOTMODE = false ]; then
+	ui_print "- Installing through TWRP Not supported"
+	ui_print "- Intsall this module via Magisk Manager"
+	abort "- ! Aborting installation !"
+fi
+
 ui_print "- Installing YouTube vanced"
 
 # Uninstall YouTube app
@@ -19,7 +27,6 @@ fi
 
 # SQLite3 and busybox binary
 # SQLite3 binary is needed for detach script
-mkdir -p $MODPATH/system/bin
 if [ "$ARCH" = "arm" ]; then
 	mv $MODPATH/sqlite3/sqlite3-arm $MODPATH/system/bin/sqlite3
 	mv $MODPATH/busybox/busybox-arm $MODPATH/system/bin/busybox
@@ -73,20 +80,25 @@ sleep 60
 LDB=\"/data/data/com.android.vending/databases/library.db\"
 LADB=\"/data/data/com.android.vending/databases/localappstate.db\"
 
-# Force stop Play store
-am force-stop com.android.vending
+GET_LDB=\`sqlite3 \$LDB \"SELECT doc_type,doc_id FROM ownership\" | grep com.google.android.youtube | head -n 1 | grep -o 25\`
+GET_LADB=\`sqlite3 \$LADB \"SELECT auto_update,package_name FROM appstate\" | grep com.google.android.youtube | head -n 1 | grep -o 2\`
 
-sqlite3 \$LDB \"UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'\";
-sqlite3 \$LADB \"UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'\";
-
-# Disable Fallback broadcast
-pm disable \"com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver\"
-cmd appops set com.android.vending RUN_IN_BACKGROUND ignore
+if [[ \"\$GET_LDB\" != \"25\" || \"\$GET_LADB\" != \"2\" ]]; then
+	# Force stop Play store
+	am force-stop com.android.vending > /dev/null 2>&1
+	
+	sqlite3 \$LDB \"UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'\"
+	sqlite3 \$LADB \"UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'\"
+	
+	# Disable Fallback broadcast
+	pm disable \"com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver\" > /dev/null 2>&1
+	cmd appops set com.android.vending RUN_IN_BACKGROUND ignore > /dev/null 2>&1
+fi
 " >> $MODPATH/service.sh
 
-# Run crond job every 6 hourly
+# Run crond job every 1 hour
 echo "
-# Run crond job every 6 hourly
+# Run crond job every 1 hour
 busybox crond -b -c /data/adb/modules/VancedYT/crontabs
 " >> $MODPATH/service.sh
 
@@ -120,7 +132,7 @@ chmod +x /data/adb/service.d/VancedYT-uninstall.sh
 set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 
 # Remove Leftovers
-rm -rf $TMP $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube
+rm -rf $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube
 
 # Note to other developers who are looking at this script.
 # Tell me if you have any suggestions, ideas, improvements etc.
