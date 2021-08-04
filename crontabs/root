@@ -1,4 +1,4 @@
 
-# Run every 6 hours
-0 */6 * * * /system/bin/detachyt
+# Run every 1 hour
+0 */1 * * * /system/bin/detachyt
 
