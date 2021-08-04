@@ -62,7 +62,7 @@ pm install-commit $ID > /dev/null 2>&1
 Install_Official_YouTube
 
 # mount Vanced YouTube with official YouTube
-ui_print "- Mounting Vanced YouTube"
+ui_print "- Mounting YouTube Vanced"
 YT=`pm path com.google.android.youtube | cut -d ":" -f2- | grep "base.apk"`
 echo "mount -o bind /data/adb/modules/VancedYT/vanced/base.apk $YT" >> $MODPATH/service.sh
 chcon u:object_r:apk_data_file:s0 $MODPATH/vanced/base.apk
@@ -70,10 +70,10 @@ mount -o bind $MODPATH/vanced/base.apk $YT
 
 # Disable Play store updates for vanced YouTube
 # Detach script
-ui_print "- Adding Detach script for vanced YouTube"
+ui_print "- Adding Detach script for YouTube Vanced"
 
 echo "
-# Disable Play store updates for vanced YouTube
+# Disable Play store updates for YouTube Vanced
 # Wait 
 sleep 60
 
@@ -96,9 +96,9 @@ if [[ \"\$GET_LDB\" != \"25\" || \"\$GET_LADB\" != \"2\" ]]; then
 fi
 " >> $MODPATH/service.sh
 
-# Run crond job every 1 hour
+# Run crond demon on boot
 echo "
-# Run crond job every 1 hour
+# Run crond demon on boot
 busybox crond -b -c /data/adb/modules/VancedYT/crontabs
 " >> $MODPATH/service.sh
 
@@ -131,8 +131,32 @@ fi
 chmod +x /data/adb/service.d/VancedYT-uninstall.sh
 set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 
+# Disable battery optimization for YouTube vanced
+# Reboot the device to apply this setting
+ui_print "- Disable battery optimization for YouTube vanced"
+dumpsys deviceidle whitelist +com.google.android.youtube > /dev/null 2>&1
+
+# Disable MIUI optimization
+# This is not required for this module
+# This can be done manually
+## First enable developer options : Settings --> About phone --> Tap on the MIUI version until it shows "you are now a developer".
+## Now go back to Settings main menu
+## Settings --> Additional Settings --> Developer Options --> Scroll down to the bottom and turn off "MIUI optimizations".
+Disable_MIUI_Optimization() {
+if grep -q 'miui' /system/build.prop; then
+ui_print "- MIUI Detected. Disable MIUI optimization"
+echo "
+# Disable MiUI optimization
+persist.sys.miui_optimization=false
+" >> $MODPATH/system.prop
+fi
+}
+#Disable_MIUI_Optimization
+
+
 # Remove Leftovers
 rm -rf $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube
 
 # Note to other developers who are looking at this script.
 # Tell me if you have any suggestions, ideas, improvements etc.
+
