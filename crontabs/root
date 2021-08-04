@@ -1,4 +1,4 @@
-
 # Run every 1 hour
+# For more help - https://crontab.guru/
 0 */1 * * * /system/bin/detachyt
 
