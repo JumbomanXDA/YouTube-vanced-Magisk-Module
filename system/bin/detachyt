@@ -1,29 +1,32 @@
 #!/system/bin/sh
 # Disable Play store updates for vanced YouTube
 
-LDB="/data/data/com.android.vending/databases/library.db"
-LADB="/data/data/com.android.vending/databases/localappstate.db"
+PS=com.android.vending
+LDB="/data/data/$PS/databases/library.db"
+LADB="/data/data/$PS/databases/localappstate.db"
+YT=com.google.android.youtube
 
-GET_LDB=`sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep com.google.android.youtube | head -n 1 | grep -o 25`
-GET_LADB=`sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep com.google.android.youtube | head -n 1 | grep -o 2`
+GET_LDB=`sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head -n 1 | grep -o 25`
+GET_LADB=`sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2`
 
-# Keep Log for ~4 days
+# Keep Log for ~7 days
 N=$(cat /data/detach_YT.log | wc -l)
 if [ "$N" -ge "100" ]; then
 	rm -rf /data/detach_YT.log
 fi
 
 if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
-	# Force stop Play store
-	am force-stop com.android.vending > /dev/null 2>&1
+	# Force Disable Play store
+	# I find that sometimes "am force-stop" command not working
+	pm disable $PS > /dev/null 2>&1
 	
-	sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'"
-	sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'"
+	# Update database
+	sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = '$YT'"
+	sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = '$YT'"
 	
-	# Disable Fallback broadcast
-	pm disable "com.android.vending/com.google.android.finsky.scheduler.FallbackReceiver" > /dev/null 2>&1
-	cmd appops set com.android.vending RUN_IN_BACKGROUND ignore > /dev/null 2>&1
-	
+	# Re-enable Play store
+	pm enable $PS > /dev/null 2>&1
+
 	# Log
 	echo "$(date) - YouTube vanced successfully detached from play store" >> /data/detach_YT.log
 else
