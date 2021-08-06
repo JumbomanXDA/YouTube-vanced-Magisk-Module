@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Disable Play store updates for vanced YouTube
+# Detach script - Disable Play store updates for vanced YouTube
 
 # Expansion
 LOG=/data/detach_YT.log
