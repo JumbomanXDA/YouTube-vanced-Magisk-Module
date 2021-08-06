@@ -17,6 +17,9 @@ if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
 	sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = 'com.google.android.youtube'"
 	sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = 'com.google.android.youtube'"
 	
+	# Delete cache for play store
+	rm -rf /data/data/com.android.vending/cache/*
+
 	# Re-enable Play store
 	pm enable com.android.vending > /dev/null 2>&1
 fi
