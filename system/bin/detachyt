@@ -26,6 +26,9 @@ if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
 	sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = '$YT'"
 	sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = '$YT'"
 	
+	# Delete cache for play store
+	rm -rf /data/data/$PS/cache/*
+	
 	# Re-enable Play store
 	pm enable $PS > /dev/null 2>&1
 
