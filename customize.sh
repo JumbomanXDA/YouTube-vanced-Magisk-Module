@@ -91,6 +91,7 @@ LADB=/data/data/$PS/databases/localappstate.db
 pm disable $PS > /dev/null 2>&1
 $MODPATH/system/bin/sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = '$YT'"
 $MODPATH/system/bin/sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = '$YT'"
+rm -rf /data/data/com.android.vending/cache/*
 pm enable $PS > /dev/null 2>&1
 
 
