@@ -1,6 +1,8 @@
 #!/system/bin/sh
 # Disable Play store updates for vanced YouTube
 
+# Expansion
+LOG=/data/detach_YT.log
 PS=com.android.vending
 LDB="/data/data/$PS/databases/library.db"
 LADB="/data/data/$PS/databases/localappstate.db"
@@ -10,9 +12,9 @@ GET_LDB=`sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head 
 GET_LADB=`sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2`
 
 # Keep Log for ~7 days
-N=$(cat /data/detach_YT.log | wc -l)
+N=$(cat $LOG | wc -l)
 if [ "$N" -ge "100" ]; then
-	rm -rf /data/detach_YT.log
+	rm -rf $LOG
 fi
 
 if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
@@ -28,8 +30,8 @@ if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
 	pm enable $PS > /dev/null 2>&1
 
 	# Log
-	echo "$(date) - YouTube vanced successfully detached from play store" >> /data/detach_YT.log
+	echo "$(date) - YouTube vanced successfully detached from play store" >> $LOG
 else
-	echo "$(date) - YouTube vanced already detached. No need to run detach script" >> /data/detach_YT.log
+	echo "$(date) - YouTube vanced already detached. No need to run detach script" >> $LOG
 fi
 
