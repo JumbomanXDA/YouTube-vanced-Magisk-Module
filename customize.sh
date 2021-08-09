@@ -8,7 +8,7 @@ if [ $BOOTMODE = false ]; then
 	abort "- ! Aborting installation !"
 fi
 
-ui_print "- Installing YouTube vanced"
+ui_print "- Installing YouTube Vanced v16.29.39"
 
 # Uninstall YouTube app
 # Keep the data and cache directories around after package removal [-k]
@@ -46,10 +46,10 @@ cd $MODPATH/YouTube
 
 # Get Total size of all apk's
 # ls -l | awk '{s+=$5} END {print s}'
-Total_Size=`ls -l | awk '{print $5}' | awk '{s+=$1} END {print s}'`
+Total_Size=$(ls -l | awk '{print $5}' | awk '{s+=$1} END {print s}')
 
 # Get Session ID
-ID=`pm install-create -S $Total_Size | sed 's/.*\[//g;s/\]//g'`
+ID=$(pm install-create -S $Total_Size | sed 's/.*\[//g;s/\]//g')
 
 # Prepare for stagging apk's
 TMP=$MODPATH/sqlite3
@@ -69,7 +69,7 @@ Install_Official_YouTube
 
 # mount Vanced YouTube with official YouTube
 ui_print "- Mounting YouTube Vanced"
-YT_Path=`pm path $YT | cut -d ":" -f2- | grep "base.apk"`
+YT_Path=$(pm path $YT | cut -d ":" -f2- | grep "base.apk")
 echo "mount -o bind /data/adb/modules/VancedYT/vanced/base.apk $YT_Path" >> $MODPATH/service.sh
 
 
@@ -91,7 +91,7 @@ LADB=/data/data/$PS/databases/localappstate.db
 pm disable $PS > /dev/null 2>&1
 $MODPATH/system/bin/sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = '$YT'"
 $MODPATH/system/bin/sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = '$YT'"
-rm -rf /data/data/com.android.vending/cache/*
+rm -rf /data/data/$PS/cache/*
 pm enable $PS > /dev/null 2>&1
 
 
