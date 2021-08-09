@@ -4,12 +4,12 @@
 # Expansion
 LOG=/data/detach_YT.log
 PS=com.android.vending
-LDB="/data/data/$PS/databases/library.db"
-LADB="/data/data/$PS/databases/localappstate.db"
+LDB=/data/data/$PS/databases/library.db
+LADB=/data/data/$PS/databases/localappstate.db
 YT=com.google.android.youtube
 
-GET_LDB=`sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head -n 1 | grep -o 25`
-GET_LADB=`sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2`
+GET_LDB=$(sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head -n 1 | grep -o 25)
+GET_LADB=$(sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2)
 
 # Keep Log for ~7 days
 N=$(cat $LOG | wc -l)
