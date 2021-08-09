@@ -9,8 +9,8 @@ LDB=/data/data/$PS/databases/library.db
 LADB=/data/data/$PS/databases/localappstate.db
 YT=com.google.android.youtube
 
-GET_LDB=`sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head -n 1 | grep -o 25`
-GET_LADB=`sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2`
+GET_LDB=$(sqlite3 $LDB "SELECT doc_type,doc_id FROM ownership" | grep $YT | head -n 1 | grep -o 25)
+GET_LADB=$(sqlite3 $LADB "SELECT auto_update,package_name FROM appstate" | grep $YT | head -n 1 | grep -o 2)
 
 if [[ "$GET_LDB" != "25" || "$GET_LADB" != "2" ]]; then
 	# Force Disable Play store
