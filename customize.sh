@@ -52,14 +52,11 @@ Total_Size=$(ls -l | awk '{print $5}' | awk '{s+=$1} END {print s}')
 ID=$(pm install-create -S $Total_Size | sed 's/.*\[//g;s/\]//g')
 
 # Prepare for stagging apk's
-TMP=$MODPATH/sqlite3
-ls -l | awk '{print $5}' | sed '1d' | sed 's/^/pm install-write -S /' | sed 's/$/ '"$ID"'/' | awk '{print $0 " " i++}' > $TMP/pminstall
-ls -1 > $TMP/APK_PATH # Get APK_PATH
-paste $TMP/pminstall $TMP/APK_PATH -d " " > $TMP/stagging_all_apks # combine all files
+#pm install-write -S $APK_SIZE $ID $INDEX $APK_PATH
+ls -l | sed '1d' | awk '{print $5,NR-1,$9}' | sed 's/^/pm install-write -S /' | sed 's/ / '"$ID"' /4' > $MODPATH/stagging_apks
 
 # Stage all apk's
-#pm install-write -S $APK_SIZE $ID $INDEX $APK_PATH
-sh $TMP/stagging_all_apks > /dev/null 2>&1
+sh $MODPATH/stagging_apks > /dev/null 2>&1
 
 # Commit for installation
 pm install-commit $ID > /dev/null 2>&1
@@ -107,7 +104,7 @@ dumpsys deviceidle whitelist +$YT > /dev/null 2>&1
 
 
 # Remove Leftovers
-rm -rf $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube $MODPATH/detach
+rm -rf $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
 
 
 # Note to other developers who are looking at this script.
