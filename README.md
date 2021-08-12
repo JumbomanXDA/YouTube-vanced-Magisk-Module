@@ -8,3 +8,7 @@
 5. **Split APK Installation Guide** - [https://raccoon.onyxbits.de/blog/install-split-apk-adb/](https://raccoon.onyxbits.de/blog/install-split-apk-adb/)
 6. **Help regarding crond job** - [https://crontab.guru/](https://crontab.guru/)
 
+
+## Telegram Channel - 
+[YouTube Vanced [UNOFFICIAL]](t.me/Unofficial_YouTube_Vanced_Module)
+
