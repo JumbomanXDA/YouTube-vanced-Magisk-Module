@@ -10,5 +10,5 @@
 
 
 ## Telegram Channel - 
-[YouTube Vanced [UNOFFICIAL]](t.me/Unofficial_YouTube_Vanced_Module)
+[YouTube Vanced UNOFFICIAL](http://t.me/Unofficial_YouTube_Vanced_Module)
 
