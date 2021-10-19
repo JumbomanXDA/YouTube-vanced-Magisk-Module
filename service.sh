@@ -1,4 +1,4 @@
-#!/system/bin/shsh
+#!/system/bin/sh
 
 # Wait till device boot process complets
 while [ "$(getprop sys.boot_completed)" != "1" ]; do
