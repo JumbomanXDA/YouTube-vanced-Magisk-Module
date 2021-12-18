@@ -8,7 +8,7 @@ if [ $BOOTMODE = false ]; then
 	abort "- ! Aborting installation !"
 fi
 
-ui_print "- Installing YouTube Vanced v16.29.39"
+ui_print "- Installing YouTube Vanced v16.30.34"
 
 # Uninstall YouTube app
 # Keep the data and cache directories around after package removal [-k]
