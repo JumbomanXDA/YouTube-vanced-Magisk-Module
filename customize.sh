@@ -15,8 +15,9 @@ ui_print "- Installing YouTube Vanced v16.30.34"
 # User with multiple "Work Profiles", YouTube is uninstalled for main user only [--user 0]
 YT=com.google.android.youtube
 PACKAGE=$(pm list packages | grep $YT | head -n 1 | cut -d ":" -f2-)
-if [ "$PACKAGE" = "$YT" ]; then
-	pm uninstall -k --user 0 $YT > /dev/null 2>&1
+
+if [[ "$PACKAGE" = "$YT" && ! -d /data/adb/modules/VancedYT ]]; then
+		pm uninstall -k --user 0 $YT > /dev/null 2>&1
 fi
 
 
@@ -28,15 +29,13 @@ if [ -d /data/adb/Vanced ]; then
 fi
 
 
-# SQLite3 and busybox binary - Required for detach script
+# SQLite3 binary - Required for detach script
 if [ "$ARCH" = "arm" ]; then
 	mv $MODPATH/sqlite3/sqlite3-arm $MODPATH/system/bin/sqlite3
-	mv $MODPATH/busybox/busybox-arm $MODPATH/system/bin/busybox
 elif [ "$ARCH" = "arm64" ]; then
 	mv $MODPATH/sqlite3/sqlite3-arm64 $MODPATH/system/bin/sqlite3
-	mv $MODPATH/busybox/busybox-arm64 $MODPATH/system/bin/busybox
 fi
-set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
+chmod +x $MODPATH/system/bin/sqlite3
 
 
 # Install official YouTube app [base + split apk's]
@@ -104,8 +103,10 @@ dumpsys deviceidle whitelist +$YT > /dev/null 2>&1
 
 
 # Remove Leftovers
-rm -rf $MODPATH/busybox $MODPATH/sqlite3 $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
-
+for i in $MODPATH/sqlite3 $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
+do
+	rm -rf $i > /dev/null 2>&1
+done
 
 # Note to other developers who are looking at this script.
 # Tell me if you have any suggestions, ideas, improvements etc.
