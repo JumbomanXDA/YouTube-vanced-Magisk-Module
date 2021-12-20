@@ -31,6 +31,5 @@ if [ "$PACKAGE" = "$YT" ]; then
 	fi
 
 	# Run crond demon on boot
-	busybox crond -b -c /data/adb/modules/VancedYT/crontabs
+	/data/adb/magisk/busybox crond -b -c /data/adb/modules/VancedYT/crontabs
 fi
-
