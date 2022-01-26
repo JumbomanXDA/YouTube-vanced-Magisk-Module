@@ -29,15 +29,6 @@ if [ -d /data/adb/Vanced ]; then
 fi
 
 
-# SQLite3 binary - Required for detach script
-if [ "$ARCH" = "arm" ]; then
-	mv $MODPATH/sqlite3/sqlite3-arm $MODPATH/system/bin/sqlite3
-elif [ "$ARCH" = "arm64" ]; then
-	mv $MODPATH/sqlite3/sqlite3-arm64 $MODPATH/system/bin/sqlite3
-fi
-chmod +x $MODPATH/system/bin/sqlite3
-
-
 # Install official YouTube app [base + split apk's]
 Install_Official_YouTube() {
 # Change Directory
@@ -80,6 +71,10 @@ ui_print "- Adding Detach script for YouTube Vanced"
 cat $MODPATH/detach >> $MODPATH/service.sh
 
 
+# Set proper Permissions for /bin folder
+set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
+
+
 # Instant Detach
 PS=com.android.vending
 LDB=/data/data/$PS/databases/library.db
@@ -103,7 +98,7 @@ dumpsys deviceidle whitelist +$YT > /dev/null 2>&1
 
 
 # Remove Leftovers
-for i in $MODPATH/sqlite3 $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
+for i in $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
 do
 	rm -rf $i > /dev/null 2>&1
 done
