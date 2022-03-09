@@ -8,24 +8,30 @@ if [ $BOOTMODE = false ]; then
 	abort "- ! Aborting installation !"
 fi
 
-ui_print "- Installing YouTube Vanced v16.30.34"
+ui_print "- Installing YouTube Vanced v17.03.38"
 
 # Uninstall YouTube app
 # Keep the data and cache directories around after package removal [-k]
 # User with multiple "Work Profiles", YouTube is uninstalled for main user only [--user 0]
-YT=com.google.android.youtube
-PACKAGE=$(pm list packages | grep $YT | head -n 1 | cut -d ":" -f2-)
+PK=com.google.android.youtube
+PACKAGE=$(pm list packages | grep $PK | head -n 1 | cut -d ":" -f2-)
 
-if [[ "$PACKAGE" = "$YT" && ! -d /data/adb/modules/VancedYT ]]; then
-		pm uninstall -k --user 0 $YT > /dev/null 2>&1
-fi
-
-
-# Uninstall Official Vanced YouTube
-if [ -d /data/adb/Vanced ]; then
-	rm -rf /data/adb/post-fs-data.d/vanced.sh
-	rm -rf /data/adb/service.d/vanced.sh
-	rm -rf /data/adb/Vanced
+if [ "$PACKAGE" = "$PK" ]; then
+	if [ -d /data/adb/modules/VancedYT ]; then
+		ui_print "- Dirty Flashing YouTube Vanced"
+		pm uninstall -k $PK > /dev/null 2>&1
+	elif [ -d /data/adb/Vanced ]; then
+		ui_print "- Official YouTube Vanced Detected"
+		ui_print "-           Uninstalling"
+		pm uninstall $PK > /dev/null 2>&1
+		rm -rf /data/adb/post-fs-data.d/vanced.sh
+		rm -rf /data/adb/service.d/vanced.sh
+		rm -rf /data/adb/Vanced
+	else
+		ui_print "- Stock YouTube Detected"
+		ui_print "-           Uninstalling"
+		pm uninstall --user 0 $PK > /dev/null 2>&1
+	fi
 fi
 
 
@@ -56,13 +62,13 @@ Install_Official_YouTube
 
 # mount Vanced YouTube with official YouTube
 ui_print "- Mounting YouTube Vanced"
-YT_Path=$(pm path $YT | cut -d ":" -f2- | grep "base.apk")
-echo "mount -o bind /data/adb/modules/VancedYT/vanced/base.apk $YT_Path" >> $MODPATH/service.sh
+PK_Path=$(pm path $PK | cut -d ":" -f2- | grep "base.apk")
+echo "mount -o bind /data/adb/modules/VancedYT/vanced/base.apk $PK_Path" >> $MODPATH/service.sh
 
 
 # Instant mount
 chcon u:object_r:apk_data_file:s0 $MODPATH/vanced/base.apk
-mount -o bind $MODPATH/vanced/base.apk $YT_Path
+mount -o bind $MODPATH/vanced/base.apk $PK_Path
 
 
 # Detach script - Disable Play store updates for vanced YouTube
@@ -79,9 +85,10 @@ set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 PS=com.android.vending
 LDB=/data/data/$PS/databases/library.db
 LADB=/data/data/$PS/databases/localappstate.db
+cmd appops set --uid $PS GET_USAGE_STATS ignore
 pm disable $PS > /dev/null 2>&1
-$MODPATH/system/bin/sqlite3 $LDB "UPDATE ownership SET doc_type = '25' where doc_id = '$YT'"
-$MODPATH/system/bin/sqlite3 $LADB "UPDATE appstate SET auto_update = '2' where package_name = '$YT'"
+$MODPATH/system/bin/sqlite3 $LDB "UPDATE ownership SET doc_type = '25' WHERE doc_id = '$PK'";
+$MODPATH/system/bin/sqlite3 $LADB "UPDATE appstate SET auto_update = '2' WHERE package_name = '$PK'";
 rm -rf /data/data/$PS/cache/*
 pm enable $PS > /dev/null 2>&1
 
@@ -94,7 +101,7 @@ chmod +x /data/adb/service.d/VancedYT-uninstall.sh
 # Disable battery optimization for YouTube vanced
 sleep 1
 ui_print "- Disable Battery Optimization for YouTube vanced"
-dumpsys deviceidle whitelist +$YT > /dev/null 2>&1
+dumpsys deviceidle whitelist +$PK > /dev/null 2>&1
 
 
 # Remove Leftovers
