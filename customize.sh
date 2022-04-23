@@ -8,6 +8,7 @@ if [ $BOOTMODE = false ]; then
 	abort "- ! Aborting installation !"
 fi
 
+
 ui_print "- Installing YouTube Vanced v17.03.38"
 
 # Uninstall YouTube app
@@ -18,20 +19,30 @@ PACKAGE=$(pm list packages | grep $PK | head -n 1 | cut -d ":" -f2-)
 
 if [ "$PACKAGE" = "$PK" ]; then
 	if [ -d /data/adb/modules/VancedYT ]; then
-		ui_print "- Dirty Flashing YouTube Vanced"
 		pm uninstall -k $PK > /dev/null 2>&1
 	elif [ -d /data/adb/Vanced ]; then
-		ui_print "- Official YouTube Vanced Detected"
-		ui_print "-           Uninstalling"
 		pm uninstall $PK > /dev/null 2>&1
 		rm -rf /data/adb/post-fs-data.d/vanced.sh
 		rm -rf /data/adb/service.d/vanced.sh
 		rm -rf /data/adb/Vanced
 	else
-		ui_print "- Stock YouTube Detected"
-		ui_print "-           Uninstalling"
 		pm uninstall --user 0 $PK > /dev/null 2>&1
 	fi
+fi
+
+
+# Theme configuration
+mkdir -p $MODPATH/vanced
+SDcard=/storage/emulated/0
+if [[ -e $SDcard/ytdark* || -e $SDcard/Ytdark* || -e $SDcard/YTDARK* ]]; then
+	mv -f $MODPATH/Theme/dark.apk $MODPATH/vanced/base.apk
+	ui_print "- Dark theme selected"
+elif [[ -e $SDcard/ytblack* || -e $SDcard/Ytblack* || -e $SDcard/YTBLACK* ]]; then
+	mv -f $MODPATH/Theme/black.apk $MODPATH/vanced/base.apk
+	ui_print "- Black theme selected"
+else
+	mv -f $MODPATH/Theme/black.apk $MODPATH/vanced/base.apk
+	ui_print "- Dark theme selected [Default Theme]"
 fi
 
 
@@ -105,7 +116,7 @@ dumpsys deviceidle whitelist +$PK > /dev/null 2>&1
 
 
 # Remove Leftovers
-for i in $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
+for i in $MODPATH/Theme $MODPATH/YouTube $MODPATH/detach $MODPATH/stagging_apks
 do
 	rm -rf $i > /dev/null 2>&1
 done
